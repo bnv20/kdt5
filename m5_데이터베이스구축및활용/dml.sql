@@ -253,3 +253,208 @@ GROUP BY c.name;
 
 
 
+
+--Q.주소에 ‘대한민국’을 포함하는 고객들로 구성된 뷰를 만들고 조회하시오. 뷰의 이름은 vw_Customer로 설정하시오.
+CREATE VIEW vw_Customer
+AS SELECT *
+FROM customer
+WHERE address LIKE'%대한민국%';
+
+SELECT * FROM vw_Customer;
+SELECT * FROM customer;
+--[과제]Orders 테이블에서 고객이름과 도서이름을 바로 확인할 수 있는 뷰를 생성한 후, 
+--‘김연아’ 고객이 구입한 도서의 주문번호, 도서이름, 주문액을 보이시오.
+CREATE VIEW vw_orders(orderid,custid,name,bookid,bookname,saleprice,orderdate)
+AS SELECT o.orderid, o.custid, c.name, o.bookid, b.bookname, o.saleprice, o.orderdate
+FROM orders o, customer c, book b
+WHERE o.custid = c.custid AND o.bookid=b.bookid;
+SELECT * FROM vw_orders;
+SELECT orderid, bookname, saleprice
+FROM vw_orders
+WHERE name='김연아';
+--[과제]vw_Customer를 미국을 주소로 가진 고객으로 변경하세요.
+SELECT * FROM vw_Customer;
+CREATE OR REPLACE VIEW vw_Customer
+AS SELECT *
+FROM customer
+WHERE address LIKE'%미국%';
+
+--[과제]앞서 생성한 뷰 vw_Customer를 삭제하시오.
+DROP VIEW vw_Customer;
+
+--[HR Tables]
+
+SELECT * FROM employees;
+--[과제]EMPLOYEES 테이블에서 commission_pct 의  Null값 갯수를  출력하세요.
+SELECT COUNT(*)
+FROM employees
+WHERE commission_pct is null;
+--[과제]EMPLOYEES 테이블에서 employee_id가 홀수인 것만 출력하세요.
+SELECT *
+FROM employees
+WHERE MOD(employee_id,2)=1;
+--[과제]job_id의 문자 길이를 구하세요.
+SELECT job_id, LENGTH(job_id) FROM employees;
+--[과제]job_id 별로 연봉합계 연봉평균 최고연봉 최저연봉 출력
+SELECT job_id, SUM(salary)연봉합계, AVG(salary)연봉평균, MAX(salary)최고연봉,MIN(salary)최저연봉
+FROM employees
+GROUP BY job_id;
+
+--날짜 관련 함수
+SELECT SYSDATE FROM DUAL;
+SELECT * FROM employees;
+SELECT last_name, hire_date, TRUNC((SYSDATE - hire_date)/365,0)근속연수 FROM employees;
+
+--특정 개월 수를 더한 날짜를 구하기
+SELECT last_name, hire_date, ADD_MONTHS(hire_date,6) FROM employees;
+
+--해당 날짜가 속한 월의 말일을 반환하는 함수
+SELECT LAST_DAY(SYSDATE) FROM dual;
+
+--Q. 다음 달 말일(hire_data 기준)
+select last_name, hire_date,last_DAY(ADD_MONTHS(hire_date,1)) "입사 다음달 말일"
+from employees;
+
+--해당 날짜를 기준으로 명시된 요일에 해당하는 다음주 날짜를 반환
+SELECT hire_date,next_day(hire_date,'월') FROM employees;
+
+--months_between() 날짜와 날짜 사이의 개월 수를 구하기
+SELECT last_name, TRUNC(MONTHS_BETWEEN(sysdate,hire_date),0)근속월수1, ROUND(MONTHS_BETWEEN(sysdate,hire_date),0)근속월수2 FROM employees;
+
+--Q.입사일 6개월 후 첫 번째 월요일을 직원이름별로 출력하세요.
+SELECT last_name, hire_date, NEXT_DAY(ADD_MONTHS(hire_date,6),'월')d_day
+FROM employees;
+
+--Q.job_id 별로 연봉합계 연봉평균 최고연봉 최저연봉 출력, 단 평균연봉이 5000 이상인 경우만 포함
+select job_id , sum(salary)연봉합계,avg(salary)연봉평균,max(salary)최고연봉,min(salary)최저연봉
+from employees
+group by job_id
+having avg(salary) >= 5000;
+
+--Q.job_id 별로 연봉합계 연봉평균 최고연봉 최저연봉 출력, 단 평균연봉이 5000 이상인 경우만 내림차순으로 정렬
+select job_id , sum(salary)연봉합계,avg(salary)연봉평균,max(salary)최고연봉,min(salary)최저연봉
+from employees
+group by job_id
+having avg(salary) >= 5000
+order by avg(salary) desc;
+
+
+--Q. last_name에 L이 포함된 직원의 연봉을 구하라
+SELECT LAST_NAME , SALARY
+FROM EMPLOYEES
+WHERE LAST_NAME LIKE '%L%';
+
+--Q. job_id에 PROG가 포함된 직원의 입사일 구하라
+SELECT JOB_ID,HIRE_DATE
+FROM EMPLOYEES
+WHERE JOB_ID LIKE '%PROG%';
+
+--Q. 연봉이 10000$ 이상인 MANAGER_ID 가 100인 직원의 데이터 출력
+SELECT * 
+FROM EMPLOYEES
+WHERE SALARY >=10000 AND MANAGER_ID =100;
+
+--Q. DEPARTMENT_ID 가 100보다 적은 모든 직원의 연봉을 구하여라
+SELECT DEPARTMENT_ID,SALARY
+FROM EMPLOYEES
+WHERE DEPARTMENT_ID <100;
+
+--Q. MANAGER_ID 가 101,103인 직원의 JOB_ID를 구하여라
+SELECT MANAGER_ID,JOB_ID
+FROM EMPLOYEES
+WHERE MANAGER_ID =101 OR MANAGER_ID =103;
+
+--join
+
+--Q. 사원번호가 110인 사원의 부서명
+SELECT employee_id, department_name
+FROM employees e,departments d
+WHERE e.department_id=d.department_id and employee_id=110;
+
+SELECT employee_id, department_name
+FROM employees e
+join departments d on e.department_id=d.department_id
+WHERE employee_id=110;
+
+--Q.사번이 120번인 사람의 사번, 이름, 업무(job_id), 업무명(job_title)을 출력(두가지 방식)
+select employee_id,last_name,e.job_id,job_title 
+from employees e 
+join jobs j on e.job_id=j.job_id
+where employee_id=120;
+
+select employee_id,last_name,e.job_id,job_title from employees e,jobs j 
+where employee_id=120 and e.job_id=j.job_id;
+
+--사번, 이름, department_name, job_title(employees, departments, jobs)
+SELECT * FROM employees;
+SELECT * FROM departments;
+SELECT * FROM jobs;
+
+SELECT e.employee_id, e.first_name, e.last_name, d.department_name, j.job_title
+FROM employees e, departments d, jobs j
+WHERE e.job_id=j.job_id AND e.department_id=d.department_id;
+
+SELECT e.employee_id 사번, e.last_name 이름, d.department_name 사원, j.job_title 직무명
+FROM employees e
+join departments d
+on e.department_id = d.department_id
+join jobs j
+on e.job_id = j.job_id;
+
+--self join 하나의 테이블이 두 개의 테이블인 것처럼 조인
+SELECT e.employee_id 사번, e.last_name 이름, m.last_name, m.manager_id 
+FROM employees e, employees m
+WHERE e.employee_id = m.manager_id;
+
+--outer join: 조인 조건에 만족하지 못하더라도 해당 행을 나타내고 싶을 때 사용
+SELECT e.employee_id 사번, e.last_name 이름, m.last_name, m.manager_id
+FROM employees e, employees m
+WHERE e.employee_id=m.manager_id(+);
+
+SELECT employee_id, last_name, manager_id 
+FROM employees
+WHERE last_name='Kumar';
+
+--Q.100번 부서의 구성원 모두의 급여보다 더 많은 급여를 받는 사원을 출력
+select e.last_name, e.salary from employees e
+where e.salary > ALL(select (salary) from employees where department_id = 100);
+
+
+--[과제] 2005년 이후에 입사한 직원의 사번, 이름, 입사일, 부서명(department_name), 업무명(job_title)을 출력
+SELECT e.employee_id,e.last_name,hire_date,department_name,job_title
+FROM employees e, departments d, jobs j
+WHERE e.department_id=d.department_id AND e.job_id=j.job_id and hire_date >= '05/01/01'
+ORDER BY hire_date;
+
+--[과제]job_title, department_name별로 평균 연봉을 구한 후 출력하세요. 
+SELECT job_title, department_name, ROUND(AVG(salary)) "평균 연봉"
+FROM employees e, departments d, jobs j
+WHERE e.department_id = d.department_id AND e.job_id=j.job_id
+GROUP BY job_title, department_name;
+
+--[과제]평균보다 많은 급여를 받는 직원 검색 후 출력하세요.
+SELECT *
+FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees);
+
+--[과제]last_name이 King인 직원의 last_name, hire_date, department_id를 출력하세요
+SELECT last_name, hire_date, department_id
+FROM employees
+WHERE LOWER(last_name)='king';
+
+--[과제] 사번, 이름, 직급, 출력하세요. 단, 직급은 아래 기준에 의함
+--salary > 20000 then '대표이사'
+--salary > 15000 then '이사' 
+--salary > 10000 then '부장' 
+--salary > 5000 then '과장' 
+--salary > 3000 then '대리'
+--나머지 '사원'
+SELECT employee_id 사번, last_name 이름,
+CASE WHEN salary > 20000 then '대표이사'
+WHEN salary > 15000 then '이사' 
+WHEN salary > 10000 then '부장' 
+WHEN salary > 5000 then '과장' 
+WHEN salary > 3000 then '대리'
+ELSE '사원'
+END AS 직급
+FROM employees;
