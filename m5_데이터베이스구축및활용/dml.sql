@@ -78,14 +78,94 @@ SELECT TO_CHAR(1111,'L99999') FROM dual;
 
 --WIDTH_BUCKET() 지정값, 최소값, 최대값, BUCKET 개수
 SELECT WIDTH_BUCKET(92,0,100,10) FROM dual;
+SELECT WIDTH_BUCKET(100,0,100,10) FROM dual;
 SELECT department_id, last_name, salary, WIDTH_BUCKET(salary,0,20000,5) FROM employees WHERE department_id=50;
 
 --[과제] employees 테이블에서 employee_id, last_name, salary, hire_date 및 입사일 기준으로 근속년수를 계산해서 아래사항을 추가한 후 
 --출력하세요. 2001년 1월 1일 창업하여 현재(2020년 12월 31일)까지 20년간 운영되어온 회사는 직원의 근속연수에 따라 30등급으로 나누어 등급에
 --따라 1000원의 bonus를 지급(bonus 기준 내림차순 정렬)
+SELECT employee_id, last_name, salary, hire_date,
+TRUNC(((to_date('20201231') - hire_date)/365))근속연수,
+(WIDTH_BUCKET(TRUNC(((to_date('20.12.31') - hire_date)/365)),0,20,30)) 보너스등급,
+(WIDTH_BUCKET(TRUNC(((to_date('20.12.31') - hire_date)/365)),0,20,30))*1000 bonus
+FROM employees
+ORDER BY bonus DESC;
 
+--문자함수
+SELECT UPPER('Hello World') FROM dual;
+SELECT LOWER('Hello World') FROM dual;
+SELECT last_name, salary FROM employees WHERE LOWER(last_name)='seo';
+SELECT INITCAP(job_id) FROM employees;
+SELECT job_id, LENGTH(job_id) FROM employees;
+SELECT INSTR('Hello World','o',3,2) From dual;
+SELECT SUBSTR('Hello World',3,3) FROM dual;
+SELECT SUBSTR('Hello World',-3,3) FROM dual;
+SELECT LPAD('Hello World',20,'#') FROM dual;
+SELECT RPAD('Hello World',20,'#') FROM dual;
+SELECT LTRIM('aaaHello Worldaaa','a') FROM dual;
+SELECT RTRIM('aaaHello Worldaaa','a') FROM dual;
+SELECT LTRIM('   Hello World   ') FROM dual;
+SELECT RTRIM('   Hello World   ') FROM dual;
+SELECT TRIM('   Hello World   ') FROM dual;
 
+--기타함수
+SELECT salary, commission_pct, salary*12*NVL(commission_pct,0) FROM employees;
 
+SELECT last_name, department_id,
+CASE WHEN department_id=90 THEN '경영지원실'
+WHEN department_id = 60 THEN '프로그래머'
+WHEN department_id=100 THEN '인사부'
+END AS 소속
+FROM employees;
+
+--분석함수 : 여러 가지 기준을 적용해 여러 결과를 return 할 수 있으며 처리 대상이 되는 행의 집단을 window라고 지칭
+--FIRST_VALUE() OVER() 그룹의 첫번째 값을 구한다.
+SELECT first_name 이름, salary 연봉,
+FIRST_VALUE(salary) OVER(ORDER BY salary DESC) 최고연봉
+FROM employees;
+--3줄 위의 값까지 중 첫번째 값
+SELECT first_name 이름, salary 연봉,
+FIRST_VALUE(salary) OVER(ORDER BY salary DESC ROWS 3 PRECEDING) 최고연봉
+FROM employees;
+
+--Q. 3줄 위의 값까지중 최저연봉
+select first_name 이름, salary 연봉,
+first_value(salary) over(order by salary asc rows 3 preceding) 최저연봉
+from employees;
+
+select first_name 이름, salary 연봉,
+last_value(salary) over(order by salary desc rows 3 preceding) 최저연봉
+from employees;
+
+select first_name 이름, salary 연봉,
+last_value(salary) over(order by salary desc rows 3 preceding) 최저연봉
+from employees;
+
+--Q. 위아래 각각 2줄 까지 중 최저연봉
+SELECT first_name 이름, salary 연봉,
+LAST_VALUE(salary) OVER(ORDER BY salary DESC ROWS BETWEEN 2 PRECEDING AND 2 FOLLOWING) 최저연봉
+FROM employees;
+
+--[과제] employees 테이블에서 department_id=50인 직원의 연봉을 내림차순 정렬하여 누적 카운드를 출력하세요.
+SELECT department_id, last_name, salary, COUNT(*) over(order by salary desc) 
+FROM employees
+WHERE department_id=50;
+
+--[과제] employees 테이블에서 department_id를 기준으로 오름차순 정렬하고 department_id 그룹 직원의 연봉 누적 합계를 출력하세요.
+SELECT department_id, last_name, salary, SUM(salary) OVER(PARTITION BY department_id 
+ORDER BY department_id asc) FROM employees;
+
+SELECT department_id, last_name, salary, SUM(salary) OVER( 
+ORDER BY department_id asc) FROM employees;
+
+--[과제] employees 테이블에서 department_id(부서)별 직원 연봉순위를 출력하세요.
+SELECT first_name, department_id 부서, salary 연봉,
+RANK() OVER(PARTITION BY department_id ORDER BY salary DESC) 부서연봉순위
+FROM employees;
+
+SELECT first_name, department_id 부서, salary 연봉,
+RANK() OVER(ORDER BY salary DESC) 연봉순위
+FROM employees;
 
 --dml
 DESC BOOK;
@@ -499,6 +579,35 @@ WHERE e.employee_id = m.manager_id;
 SELECT e.employee_id 사번, e.last_name 이름, m.last_name, m.manager_id
 FROM employees e, employees m
 WHERE e.employee_id=m.manager_id(+);
+
+--UNION(두 결과를 합치면서 중복 값 제거)
+SELECT first_name 이름, salary 급여 FROM employees
+WHERE salary < 5000
+UNION
+SELECT first_name 이름, salary 급여 FROM employees
+WHERE hire_date < '99/01/01';
+
+select * from employees;
+--UNINON ALL(두 결과를 합치면서 중복 포함)
+SELECT first_name 이름, salary 급여 FROM employees
+WHERE salary < 5000
+UNION ALL
+SELECT first_name 이름, salary 급여 FROM employees
+WHERE hire_date < '99/01/01';
+
+--INTERSECT(교집합)
+SELECT first_name 이름, salary 급여 FROM employees
+WHERE salary < 5000
+INTERSECT
+SELECT first_name 이름, salary 급여 FROM employees
+WHERE hire_date < '07/01/01';
+
+--MINUS(차집합)
+SELECT first_name 이름, salary 급여 FROM employees
+WHERE salary < 5000
+MINUS
+SELECT first_name 이름, salary 급여 FROM employees
+WHERE hire_date < '07/01/01';
 
 SELECT employee_id, last_name, manager_id 
 FROM employees

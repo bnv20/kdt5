@@ -48,3 +48,66 @@ SELECT * FROM MEMBER;
 ALTER TABLE MEMBER ADD TEXT NCLOB;
 
 INSERT INTO MEMBER(ID, PWD,TEXT) VALUES('200903','112','정치는 국민을 위해 존재한다');
+
+--기존 테이블을 이용하여 새로운 테이블을 생성
+CREATE TABLE MEMBER1 AS SELECT * FROM MEMBER;
+SELECT * FROM MEMBER1;
+DESC member1;
+CREATE TABLE member2 AS SELECT * FROM member1 WHERE 1=0;
+DESC member2;
+
+--테이블의 모든 row 삭제
+TRUNCATE TABLE member1;
+
+--테이블 속성 및 타입 조회
+DESC MEMBER;
+--테이블 리스트 조회
+SELECT * FROM TABS;
+
+--ALTER
+DESC MEMBER1;
+--수정
+ALTER TABLE MEMBER1 MODIFY(ID VARCHAR2(50), NAME NVARCHAR2(50));
+--변경
+ALTER TABLE MEMBER1 RENAME COLUMN BIRTHDAY TO BD;
+--삭제
+ALTER TABLE MEMBER1 DROP COLUMN AGE;
+--추가
+ALTER TABLE MEMBER1 ADD AGE NUMBER;
+
+ALTER TABLE MEMBER1 ADD CONSTRAINT MEMBER1_PK PRIMARY KEY (ID);
+
+--[과제] MEMBER2 테이블을 생성한 후 수정, 변경, 삭제, 추가 작업을 수행하세요.(학생 이력 table, 속성은 5개 이상)
+
+--Q. 아래 정보를 기반으로 PLAYER 테이블을 생성하세요.
+--테이블명 : PLAYER
+--테이블 설명 : K-리그 선수들의 정보를 가지고 있는 테이블
+--칼럼명 : 
+--PLAYER_ID (선수ID) 문자 고정 자릿수 7자리,
+--PLAYER_NAME (선수명) 문자 가변 자릿수 20자리,
+--TEAM_ID (팀ID) 문자 고정 자릿수 3자리,
+--JOIN_YYYY (입단년도) 문자 고정 자릿수 4자리,
+--POSITION (포지션) 문자 가변 자릿수 10자리,
+--BACK_NO (등번호) 숫자 2자리,
+--NATION (국적) 문자 가변 자릿수 20자리,
+--BIRTH_DATE (생년월일) 날짜,
+--제약조건 : 기본키(PRIMARY KEY) :  PLAYER_ID
+--(제약조건명은 PLAYER_PK)
+--값이 반드시 존재 (NOT NULL) : PLAYER_NAME, TEAM_ID
+
+CREATE TABLE PLAYER(
+PLAYER_ID NCHAR(7),
+PLAYER_NAME VARCHAR(20) NOT NULL,
+TEAM_ID NCHAR(3) NOT NULL,
+JOIN_YYYY NCHAR(4),
+POSITION VARCHAR(10),
+BACK_NO NUMBER(2),
+NATION VARCHAR(20),
+BIRTH_DATE DATE,
+CONSTRAINT PLAYER_PK PRIMARY KEY(PLAYER_ID)
+);
+DESC PLAYER;
+DROP TABLE PLAYER;
+
+
+
