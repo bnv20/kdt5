@@ -24,4 +24,4 @@
 - p3. 공모전 과제
   - K-Digital 헤커톤 최우수상 수상 "긴급차량 골든타임 확보 AI 기반 관제 솔루션"
 
-프로젝트 발표 영상 : https://www.youtube.com/channel/UCOlMZP-QJc0sWC2T0Rg2ZfA  
+프로젝트 발표 영상 : https://www.youtube.com/channel/UCTqrH5yKkSec2GzsJtOSprg  
