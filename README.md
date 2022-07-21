@@ -17,9 +17,11 @@
 - m13. docker 이해 및 활용
 - m14. aws 이해 및 활용
 
-#### 프로젝트
+#### 프로젝트 
 
 - p1. 유통 빅데이터 분석 및 솔루션
 - p2. 기업 특화 솔루션
 - p3. 공모전 과제
   - K-Digital 헤커톤 최우수상 수상 "긴급차량 골든타임 확보 AI 기반 관제 솔루션"
+
+프로젝트 발표 영상 : https://www.youtube.com/channel/UCOlMZP-QJc0sWC2T0Rg2ZfA  
